@@ -1,4 +1,5 @@
-import { getProfileLink } from "@/app/lib/links";
+import { BrowserCanonicalUrl } from "@/app/lib/BrowserCanonicalUrl";
+import { getProfileLink, getProfilePath } from "@/app/lib/links";
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -8,6 +9,7 @@ export default async function ProfileLinkFallbackPage({ params }: PageProps) {
   const { username: usernameParam } = await params;
   const username = decodeURIComponent(usernameParam);
   const publicUrl = getProfileLink(username);
+  const path = getProfilePath(username);
   const appDeepLink = `carvault://u/${encodeURIComponent(username)}`;
 
   return (
@@ -15,8 +17,8 @@ export default async function ProfileLinkFallbackPage({ params }: PageProps) {
       <div className="mx-auto max-w-md">
         <p className="text-xs uppercase tracking-wide text-white/50">CarVault profile link</p>
         <p className="mt-1 text-xs text-white/40">Exact canonical link</p>
-        <p className="mt-0.5 break-all text-sm text-amber-200/90" data-testid="canonical-url">
-          {publicUrl}
+        <p className="mt-0.5">
+          <BrowserCanonicalUrl path={path} serverFallback={publicUrl} />
         </p>
         <p className="mt-6 text-lg font-medium text-white">@{username}</p>
         <p className="mt-4 text-sm text-white/70">Open this profile in the CarVault app</p>

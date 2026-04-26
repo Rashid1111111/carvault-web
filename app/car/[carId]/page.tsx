@@ -1,4 +1,5 @@
-import { getCarLink } from "@/app/lib/links";
+import { BrowserCanonicalUrl } from "@/app/lib/BrowserCanonicalUrl";
+import { getCarLink, getCarPath } from "@/app/lib/links";
 
 type PageProps = {
   params: Promise<{ carId: string }>;
@@ -8,6 +9,7 @@ export default async function CarLinkFallbackPage({ params }: PageProps) {
   const { carId: carIdParam } = await params;
   const carId = decodeURIComponent(carIdParam);
   const publicUrl = getCarLink(carId);
+  const path = getCarPath(carId);
   const appDeepLink = `carvault://car/${encodeURIComponent(carId)}`;
 
   return (
@@ -15,8 +17,8 @@ export default async function CarLinkFallbackPage({ params }: PageProps) {
       <div className="mx-auto max-w-md">
         <p className="text-xs uppercase tracking-wide text-white/50">CarVault car link</p>
         <p className="mt-1 text-xs text-white/40">Exact canonical link</p>
-        <p className="mt-0.5 break-all text-sm text-amber-200/90" data-testid="canonical-url">
-          {publicUrl}
+        <p className="mt-0.5">
+          <BrowserCanonicalUrl path={path} serverFallback={publicUrl} />
         </p>
         <p className="mt-2 text-sm text-white/60">Car ID</p>
         <p className="mt-1 break-all font-mono text-sm text-white/90">{carId}</p>
