@@ -1,8 +1,46 @@
 "use client";
 
 import { useState } from "react";
+import { getAuthCallbackUrl } from "@/app/lib/authCallbackUrl";
 import { createBrowserSupabaseClient } from "./supabase-client";
 import { storePendingSignupRole } from "./ensureUserProfile";
+
+function formatCaughtError(err: unknown): string {
+  if (err instanceof Error) {
+    const m = err.message?.trim();
+    if (m) {
+      if (m === "Load failed") {
+        return "Load failed (network or CORS). Check the Supabase project URL, that this site is allowed, and that Redirect URLs include your callback.";
+      }
+      return m;
+    }
+    if (err.name) return err.name;
+  }
+  if (typeof err === "string" && err.trim()) return err.trim();
+  if (err && typeof err === "object" && "message" in err) {
+    const m = (err as { message?: unknown }).message;
+    if (typeof m === "string" && m.trim()) return m.trim();
+  }
+  try {
+    const s = JSON.stringify(err);
+    if (s && s !== "{}") return s;
+  } catch {
+    /* fall through */
+  }
+  return String(err);
+}
+
+function logAuthFailure(context: string, err: unknown): void {
+  if (process.env.NODE_ENV === "development") {
+    console.error(`[CarVault auth] ${context}`, err);
+    return;
+  }
+  if (err instanceof Error) {
+    console.error(`[CarVault auth] ${context}`, err.name, err.message);
+  } else {
+    console.error(`[CarVault auth] ${context}`, formatCaughtError(err));
+  }
+}
 
 type EmailOtpFormProps = {
   /** Shown on the card */
@@ -31,7 +69,7 @@ export function EmailOtpForm({
     setError(null);
     try {
       const supabase = createBrowserSupabaseClient();
-      const emailRedirectTo = `${window.location.origin}/auth/callback`;
+      const emailRedirectTo = getAuthCallbackUrl();
       if (role) {
         storePendingSignupRole(role);
       }
@@ -43,12 +81,18 @@ export function EmailOtpForm({
         },
       });
       if (signInError) {
-        setError(signInError.message);
+        const msg =
+          (typeof signInError.message === "string" && signInError.message.trim()
+            ? signInError.message
+            : null) ?? formatCaughtError(signInError);
+        setError(msg);
+        logAuthFailure("signInWithOtp error object", signInError);
         return;
       }
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(formatCaughtError(err));
+      logAuthFailure("signInWithOtp threw", err);
     } finally {
       setLoading(false);
     }

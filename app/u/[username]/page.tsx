@@ -1,5 +1,5 @@
 import { BrowserCanonicalUrl } from "@/app/lib/BrowserCanonicalUrl";
-import { getProfileLink, getProfilePath } from "@/app/lib/links";
+import { getProfileAppDeepLink, getProfileLink, getProfilePath, safeDecodeParam } from "@/app/lib/links";
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -7,10 +7,10 @@ type PageProps = {
 
 export default async function ProfileLinkFallbackPage({ params }: PageProps) {
   const { username: usernameParam } = await params;
-  const username = decodeURIComponent(usernameParam);
+  const username = safeDecodeParam(usernameParam);
   const publicUrl = getProfileLink(username);
   const path = getProfilePath(username);
-  const appDeepLink = `carvault://u/${encodeURIComponent(username)}`;
+  const appDeepLink = getProfileAppDeepLink(username);
 
   return (
     <div className="min-h-screen bg-[#0d2a3a] px-4 py-16 text-center text-white">
@@ -22,12 +22,21 @@ export default async function ProfileLinkFallbackPage({ params }: PageProps) {
         </p>
         <p className="mt-6 text-lg font-medium text-white">@{username}</p>
         <p className="mt-4 text-sm text-white/70">Open this profile in the CarVault app</p>
-        <a
-          className="mt-8 inline-flex min-h-11 items-center justify-center rounded-xl bg-amber-400 px-6 text-sm font-semibold text-[#0d2a3a] no-underline transition hover:bg-amber-300"
-          href={appDeepLink}
-        >
-          Open in CarVault
-        </a>
+        {appDeepLink === "#" ? (
+          <span
+            className="mt-8 inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 text-sm font-medium text-white/50"
+            role="text"
+          >
+            Open in CarVault
+          </span>
+        ) : (
+          <a
+            className="mt-8 inline-flex min-h-11 items-center justify-center rounded-xl bg-amber-400 px-6 text-sm font-semibold text-[#0d2a3a] no-underline transition hover:bg-amber-300"
+            href={appDeepLink}
+          >
+            Open in CarVault
+          </a>
+        )}
       </div>
     </div>
   );

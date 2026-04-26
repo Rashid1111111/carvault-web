@@ -64,3 +64,43 @@ export function getCarPath(carId: string): string {
   const id = String(carId).replace(/^\/+/, "");
   return `/car/${encodeURIComponent(id)}`;
 }
+
+const CARVAULT_APP_SCHEME = "carvault:";
+
+/**
+ * In-app / deep-link open URL for profile.
+ * Form: `carvault://u/{url-encoded-username}` — two slashes after the colon only (`://`); path has one segment after `u/`.
+ * Does not use `carvault:///` (three slashes after the scheme name).
+ */
+export function getProfileAppDeepLink(username: string): string {
+  const raw = safeSegmentValue(username);
+  if (!raw) {
+    return "#";
+  }
+  return `${CARVAULT_APP_SCHEME}//u/${encodeURIComponent(raw)}`;
+}
+
+/**
+ * In-app / deep-link open URL for a car.
+ * Form: `carvault://car/{url-encoded-carId}`
+ */
+export function getCarAppDeepLink(carId: string): string {
+  const raw = safeSegmentValue(String(carId));
+  if (!raw) {
+    return "#";
+  }
+  return `${CARVAULT_APP_SCHEME}//car/${encodeURIComponent(raw)}`;
+}
+
+function safeSegmentValue(value: string): string {
+  return String(value).replace(/^\/+/, "").trim();
+}
+
+/** Safe decode of dynamic route param (avoids throw if not percent-encoded as expected). */
+export function safeDecodeParam(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
