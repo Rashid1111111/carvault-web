@@ -1,0 +1,31 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appID": "XA6PC7AM3A.com.rashid.car.carvault",
+        "appIDs": ["XA6PC7AM3A.com.rashid.car.carvault"],
+        "paths": [
+          "/adventure/*",
+          "/car/*",
+          "/c/*",
+          "/collection/*",
+          "/profile/*",
+          "/u/*",
+          "/p/*",
+          "/user/*",
+          "/channel/*",
+          "/club/*",
+          "/post/*",
+          "/creator-media/*",
+          "/events/*",
+          "/road-adventures/*",
+          "/invite/*",
+          "/service/*",
+          "/service-book/*",
+          "/sb/*",
+          "/auth/success"
+        ]
+      }
+    ]
+  }
+}
